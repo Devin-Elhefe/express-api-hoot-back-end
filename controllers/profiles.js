@@ -1,29 +1,26 @@
-const express = require('express')
-const router = express.Router()
+const express = require('express');
+const router = express.Router();
+const User = require('../models/user');
+const verifyToken = require('../middleware/verify-token');
 
-const UserModel = require('../models/user')
-const verifyToken = require('../middleware/verify-token')
-
-router.get('/:userId', verifyToken, async function(req, res) {
-    console.log(req.user, "<-the logged in user info")
+router.get('/:userId', verifyToken, async (req, res) => {
     try {
-
-        const userDoc = await UserModel.findById(req.params.userId)
-        if(!userDoc) {
+        if (req.user._id !== req.params.userId){
+            return res.status(401).json({ error: "Unauthorized"})
+        }
+        const user = await User.findById(req.user._id);
+        if (!user) {
             res.status(404)
-            throw new Error("Profile not found")
+            throw new Error('Profile not found.');
         }
-        //password is being deleted because of the 
-        // toJson listner in our model on the schema
-
-        res.json({userDoc})
-    } catch(err) {
-        console.log(err)
+        res.json({ user });
+    } catch (error) {
         if (res.statusCode === 404) {
-            res.json({ error: err.message })
+            res.status(404).json({ error: error.message });
+        } else {
+            res.status(500).json({ error: error.message });
         }
-        res.status(500).json({error: err.message})
     }
-})
+});
 
-module.exports = router
+module.exports = router;
