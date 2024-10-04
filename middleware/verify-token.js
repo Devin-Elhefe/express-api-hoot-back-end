@@ -8,8 +8,10 @@ function verifyToken(req, res, next) {
         const token = req.headers.authorization.split(' ')[1]
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
         // assign the payload (decoded token) to the req.user
-        req.user = decoded.user
+        
+        req.user = decoded
         //proceed to the controller function
+        console.log(req.user)
         next()
 
     } catch(err) {
